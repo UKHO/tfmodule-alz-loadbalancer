@@ -30,17 +30,17 @@
 # 4. Run "terraform apply" to add the associations
 
 # Example: Add VM1's NIC to the backend pool
-# Note: The NIC is in "Skynet-VMs-RG" but the LB is in "rg-sdstest-lb-prod"
+# Note: The NIC is in "rg-backend-vms" but the LB is in "rg-loadbalancer-prod"
 # This works because we're using the FULL resource ID - Azure handles the cross-RG reference
 resource "azurerm_network_interface_backend_address_pool_association" "vm1" {
-  network_interface_id    = "/subscriptions/6e05c1d3-15e2-4383-a0dc-2d5a20e44289/resourceGroups/Skynet-VMs-RG/providers/Microsoft.Network/networkInterfaces/Skynet01-nic"
+  network_interface_id    = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-backend-vms/providers/Microsoft.Network/networkInterfaces/vm01-nic"
   ip_configuration_name   = "internal"  # Must match the IP config name on the NIC
   backend_address_pool_id = module.internal_lb.backend_address_pool_id
 }
 
 # Example: Add VM2's NIC to the backend pool
 resource "azurerm_network_interface_backend_address_pool_association" "vm2" {
-  network_interface_id    = "/subscriptions/6e05c1d3-15e2-4383-a0dc-2d5a20e44289/resourceGroups/Skynet-VMs-RG/providers/Microsoft.Network/networkInterfaces/Skynet02-nic"
+  network_interface_id    = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-backend-vms/providers/Microsoft.Network/networkInterfaces/vm02-nic"
   ip_configuration_name   = "internal"
   backend_address_pool_id = module.internal_lb.backend_address_pool_id
 }
@@ -52,16 +52,16 @@ resource "azurerm_network_interface_backend_address_pool_association" "vm2" {
 
 # Data source to get existing subnet
 data "azurerm_subnet" "vm_subnet" {
-  name                 = "subnet2"
-  resource_group_name  = "m-spokeconfig-rg"
-  virtual_network_name = "SDSvNetTest-vnet"
+  name                 = "subnet-backend"
+  resource_group_name  = "rg-network"
+  virtual_network_name = "vnet-spoke"
 }
 
 # Create Network Interface with Backend Pool Association
 resource "azurerm_network_interface" "web_vm1_nic" {
   name                = "web-vm1-nic"
   location            = "uksouth"
-  resource_group_name = "rg-lb-prod"
+  resource_group_name = "rg-backend-vms"
 
   ip_configuration {
     name                          = "internal"
@@ -85,7 +85,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "web_vm1" 
 resource "azurerm_windows_virtual_machine" "web_vm1" {
   name                = "web-vm1"
   location            = "uksouth"
-  resource_group_name = "rg-lb-prod"
+  resource_group_name = "rg-backend-vms"
   size                = "Standard_B2s"
   admin_username      = "azureuser"
   admin_password      = var.admin_password  # Set in tfvars or as sensitive variable
@@ -134,24 +134,24 @@ resource "azurerm_network_interface_backend_address_pool_association" "existing_
 }
 
 # Example: Multiple VMs in different resource group
-data "azurerm_network_interface" "skynet01" {
-  name                = "Skynet01-nic"
-  resource_group_name = "Skynet-VMs-RG"  # Different RG than load balancer
+data "azurerm_network_interface" "vm01" {
+  name                = "vm01-nic"
+  resource_group_name = "rg-backend-vms"  # Different RG than load balancer
 }
 
-data "azurerm_network_interface" "skynet02" {
-  name                = "Skynet02-nic"
-  resource_group_name = "Skynet-VMs-RG"
+data "azurerm_network_interface" "vm02" {
+  name                = "vm02-nic"
+  resource_group_name = "rg-backend-vms"
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "skynet01" {
-  network_interface_id    = data.azurerm_network_interface.skynet01.id
+resource "azurerm_network_interface_backend_address_pool_association" "vm01" {
+  network_interface_id    = data.azurerm_network_interface.vm01.id
   ip_configuration_name   = "internal"
   backend_address_pool_id = module.internal_lb.backend_address_pool_id
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "skynet02" {
-  network_interface_id    = data.azurerm_network_interface.skynet02.id
+resource "azurerm_network_interface_backend_address_pool_association" "vm02" {
+  network_interface_id    = data.azurerm_network_interface.vm02.id
   ip_configuration_name   = "internal"
   backend_address_pool_id = module.internal_lb.backend_address_pool_id
 }
@@ -220,9 +220,9 @@ resource "azurerm_network_interface_backend_address_pool_association" "vms" {
 # To find IP Configuration Name on a NIC:
 #   az network nic show --name <nic-name> --resource-group <rg-name> --query "ipConfigurations[0].name" -o tsv
 #
-# Example for Skynet VMs:
-#   az network nic show --name Skynet01-nic --resource-group Skynet-VMs-RG --query id -o tsv
-#   az network nic show --name Skynet01-nic --resource-group Skynet-VMs-RG --query "ipConfigurations[0].name" -o tsv
+# Example:
+#   az network nic show --name vm01-nic --resource-group rg-backend-vms --query id -o tsv
+#   az network nic show --name vm01-nic --resource-group rg-backend-vms --query "ipConfigurations[0].name" -o tsv
 #
 # ============================================================================
 # VERIFICATION AFTER DEPLOYMENT
@@ -233,8 +233,8 @@ resource "azurerm_network_interface_backend_address_pool_association" "vms" {
 #
 # 2. Or use Azure CLI:
 #    az network lb address-pool show \
-#      --resource-group rg-lb-prod \
-#      --lb-name sdstest-ilb-01-prod \
+#      --resource-group rg-loadbalancer-prod \
+#      --lb-name ilb-prod \
 #      --name backend-pool \
 #      --query backendIPConfigurations[].id
 #
