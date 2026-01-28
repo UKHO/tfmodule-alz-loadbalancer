@@ -10,22 +10,22 @@
 # ----------------------------------------------------------------------------
 
 # Resource group where the load balancer will be deployed
-rg_name = "rg-sdstest-lb-prod"
+rg_name = "rg-loadbalancer-prod"
 
 # Resource group where the VNet exists (typically in the connectivity subscription)
-vnet_rg_name = "m-spokeconfig-rg"
+vnet_rg_name = "rg-network"
 
 # Name of the existing virtual network in your spoke
-vnet_name = "SDSvNetTest-vnet"
+vnet_name = "vnet-spoke"
 
 # Name of the existing subnet within the VNet
-subnet_name = "subnet2"
+subnet_name = "subnet-backend"
 
 # Azure region for the load balancer deployment
 location = "uksouth"
 
 # Name of the load balancer
-lb_name = "sdstest-ilb-01-prod"
+lb_name = "ilb-prod"
 
 # ----------------------------------------------------------------------------
 # ALZ-COMPLIANT CONFIGURATION (PRE-CONFIGURED)
@@ -38,7 +38,7 @@ lb_name = "sdstest-ilb-01-prod"
 # STATIC PRIVATE IP (ALZ Best Practice)
 # Static allocation ensures consistent IP for DNS and application configuration
 frontend_private_ip_allocation = "Static"
-frontend_private_ip_address    = "10.241.11.200"  # UPDATE to match your subnet range
+frontend_private_ip_address    = "10.0.1.100"  # UPDATE to match your subnet range
 
 # BACKEND POOL
 backend_pool_name = "backend-pool"
@@ -105,10 +105,10 @@ diagnostic_categories = null
 # RESOURCE TAGS (ALZ Governance)
 # Mandatory tags for cost tracking, ownership, and compliance
 tags = {
-  owner       = "your-name"              # REQUIRED: Resource owner
+  owner       = "team-name"              # REQUIRED: Resource owner
   env         = "prod"                   # REQUIRED: Environment (dev/test/prod)
-  costCenter  = "IT-DEPT"                # REQUIRED: Cost allocation
-  service     = "app-name"               # REQUIRED: Service/application name
+  costCenter  = "cost-center"            # REQUIRED: Cost allocation
+  service     = "application"            # REQUIRED: Service/application name
   managedBy   = "terraform"              # How the resource is managed
   compliance  = "alz"                    # Compliance framework
   dataClass   = "internal"               # Data classification

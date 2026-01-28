@@ -1,11 +1,38 @@
 
-variable "rg_name"      { type = string }
-variable "vnet_rg_name" { type = string }
-variable "vnet_name"    { type = string }
-variable "subnet_name"  { type = string }
-# variable "law_name"     { type = string }
-# variable "law_rg_name"  { type = string }
-variable "location"     { type = string }
+variable "rg_name" {
+  description = "Resource group name for the load balancer"
+  type        = string
+}
+
+variable "vnet_rg_name" {
+  description = "Virtual network resource group name"
+  type        = string
+}
+
+variable "vnet_name" {
+  description = "Virtual network name"
+  type        = string
+}
+
+variable "subnet_name" {
+  description = "Subnet name for the load balancer"
+  type        = string
+}
+
+# variable "law_name" {
+#   description = "Log Analytics Workspace name"
+#   type        = string
+# }
+
+# variable "law_rg_name" {
+#   description = "Log Analytics Workspace resource group name"
+#   type        = string
+# }
+
+variable "location" {
+  description = "Azure region for the load balancer"
+  type        = string
+}
 
 variable "lb_name" {
   description = "Name of the load balancer"
