@@ -15,7 +15,7 @@ provider "azurerm" {
 
 
 module "internal_lb" {
-  source              = "git::https://github.com/UKHO/tfmodule-alz-loadbalancer.git//modules/alz-load-balancer?ref=v1.0.0"
+  source              = "../modules/alz-load-balancer"
   name                = var.lb_name
   location            = data.azurerm_resource_group.app_rg.location
   resource_group_name = data.azurerm_resource_group.app_rg.name
@@ -28,13 +28,23 @@ module "internal_lb" {
   
   backend_pool_name = var.backend_pool_name
 
-  probes   = var.probes
-  lb_rules = var.lb_rules
+  probes = [
+    { name = "tcp-443", protocol = "Tcp", port = 443, interval = 5, unhealthy_threshold = 2 }
+  ]
 
-  enable_outbound_rule       = var.enable_outbound_rule
-  enable_diagnostics         = var.enable_diagnostics
-  log_analytics_workspace_id = var.log_analytics_workspace_id
-  diagnostic_categories      = var.diagnostic_categories
+  lb_rules = [
+    {
+      name                  = "https-443"
+      protocol              = "Tcp"
+      frontend_port         = 443
+      backend_port          = 443
+      probe_name            = "tcp-443"
+      disable_outbound_snat = true
+    }
+  ]
+
+  enable_diagnostics         = false
+  #log_analytics_workspace_id = data.azurerm_log_analytics_workspace.law.id
 
   tags = var.tags
 }
